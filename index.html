@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ana Sayfa</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+            background-color: #f0f0f0;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .button {
+            padding: 15px 30px;
+            margin: 20px;
+            font-size: 18px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        #kayitBtn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        #kayitBtn:hover {
+            background-color: #45a049;
+        }
+        #oyunBtn {
+            background-color: #008CBA;
+            color: white;
+        }
+        #oyunBtn:hover {
+            background-color: #007bb5;
+        }
+        input {
+            padding: 10px;
+            margin: 10px;
+            width: 250px;
+            font-size: 16px;
+        }
+        .hidden {
+            display: none;
+        }
+        .formButton {
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+#saveBtn {
+            background-color: #4CAF50;
+            color: white;
+        }
+#saveBtn:hover {
+            background-color: #45a049;
+        }
+#backBtn {
+            background-color: #f44336;
+            color: white;
+        }
+#backBtn:hover {
+            background-color: #da190b;
+        }
+#guessBtn {
+            background-color: #ff9800;
+            color: white;
+        }
+#guessBtn:hover {
+            background-color: #e68a00;
+        }
+    </style>
+</head>
+<body>
+    <img src="VanGogh2.jpg" width="150">
+    <div id="mainPage">
+        <h1>Maryam İsrailova</h1>
+        <button id="kayitBtn" class="button">Kayıt Ol</button>
+        <button id="oyunBtn" class="button">Oyun</button>
+    </div>
+<div id="formContainer" class="hidden">
+        <h2>Kayıt Formu</h2>
+        <input type="text" id="nameInput" placeholder="İsim Soyisim"><br>
+        <input type="email" id="emailInput" placeholder="E-posta"><br>
+        <input type="text" id="teamInput" placeholder="Tuttuğun Takım"><br>
+        <button id="saveBtn" class="formButton">Kaydet</button>
+        <button id="backBtn" class="formButton">Ana Menüye Dön</button>
+        <div id="savedData"></div>
+    </div>
+<div id="gameContainer" class="hidden">
+<h2>Yılan Oyunu</h2>
+<canvas id="gameCanvas" width="400" height="400"></canvas>
+<br>
+<button id="gameBackBtn" class="formButton">
+        Ana Menüye Dön
+    </button>
+</div>
+<script>
+      const mainPage = document.getElementById("mainPage");
+        const formContainer = document.getElementById("formContainer");
+        const gameContainer = document.getElementById("gameContainer");
+const kayitBtn = document.getElementById("kayitBtn");
+        const oyunBtn = document.getElementById("oyunBtn");
+        const backBtn = document.getElementById("backBtn");
+        const saveBtn = document.getElementById("saveBtn");
+        const savedData = document.getElementById("savedData");
+const gameBackBtn = document.getElementById("gameBackBtn");
+let randomNumber = 0;
+kayitBtn.addEventListener("click", () => {
+            mainPage.classList.add("hidden");
+            formContainer.classList.remove("hidden");
+        });
+oyunBtn.addEventListener("click", () => {
+            mainPage.classList.add("hidden");
+            gameContainer.classList.remove("hidden");
+            startGame();
+        });
+backBtn.addEventListener("click", () => {
+            formContainer.classList.add("hidden");
+            mainPage.classList.remove("hidden");
+         
+            document.getElementById("nameInput").value = "";
+            document.getElementById("emailInput").value = "";
+            document.getElementById("teamInput").value = "";
+            savedData.innerHTML = "";
+        });
+gameBackBtn.addEventListener("click", () => {
+            gameContainer.classList.add("hidden");
+            mainPage.classList.remove("hidden");
+            gameMessage.innerHTML = "";
+            guessInput.value = "";
+        });
+saveBtn.addEventListener("click", () => {
+    const name = document.getElementById("nameInput").value;
+    const email = document.getElementById("emailInput").value;
+    const team = document.getElementById("teamInput").value;
+
+    if(name && email && team) {
+        savedData.innerHTML = `<p>Bilgileriniz kaydedildi!</p>
+                  <p>İsim Soyisim: ${name}</p>
+              <p>E-posta: ${email}</p>
+                 <p>Tuttuğun Takım: ${team}</p>`;
+            } else {
+                alert("Lütfen tüm alanları doldurun!");
+            }
+        });
+        const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+const grid = 20;
+let snake = [{x: 200, y: 200}];
+let food = {};
+let dx = grid;
+let dy = 0;
+let score = 0;
+let gameLoop;
+function createFood() {
+    food = {
+   x: Math.floor(Math.random() * (canvas.width / grid)) * grid,
+        y: Math.floor(Math.random() * (canvas.height / grid)) * grid
+    };
+}
+function draw() {
+ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+ctx.fillStyle = "green";
+snake.forEach(part => {
+ ctx.fillRect(part.x, part.y, grid - 2, grid - 2);
+});
+ctx.fillStyle = "red";
+ctx.fillRect(food.x, food.y, grid - 2, grid - 2);
+}
+function update() {
+const head = {
+x: snake[0].x + dx,
+  y: snake[0].y + dy
+};
+if (
+        head.x < 0 ||
+        head.x >= canvas.width ||
+        head.y < 0 ||
+        head.y >= canvas.height
+    ) {
+
+        gameOver();
+        return;
+
+    }
+    for(let i = 0; i < snake.length; i++) {
+
+        if(head.x === snake[i].x &&
+           head.y === snake[i].y) {
+
+            gameOver();
+            return;}
+}
+snake.unshift(head);
+if(head.x === food.x &&
+       head.y === food.y) {
+
+        score += 5;
+
+        createFood();}
+else {
+snake.pop();
+}
+draw();
+}
+function startGame() {
+snake = [{x: 200, y: 200}];
+dx = grid;
+dy = 0;
+score = 0;
+createFood();
+clearInterval(gameLoop);
+gameLoop = setInterval(update, 150);
+}
+function gameOver() {
+clearInterval(gameLoop);
+alert("Oyun Bitti! Skor: " + score);
+}
+
+document.addEventListener("keydown", e => {
+if(e.key === "ArrowUp" && dy === 0) {
+ dx = 0;
+ dy = -grid;
+ }
+else if(e.key === "ArrowDown" && dy === 0) {
+dx = 0;
+dy = grid;
+}
+else if(e.key === "ArrowLeft" && dx === 0) {
+ dx = -grid;
+ dy = 0;
+}
+else if(e.key === "ArrowRight" && dx === 0) {
+dx = grid;
+ dy = 0;
+}
+});
+</script>
+</body>
+</html>
